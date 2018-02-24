@@ -95,7 +95,27 @@ class GAN(models.Sequential):
         return Model(input = input_x, output = x)
 
     def get_z(self, shape_len):
-        # Get noise vector z from distribution p(z)
+        # Get sample minibatch of m noise samples from noise prior p(z)
         input_dim = self.input_dim
         return np.random.uniform(-1, 1, size = (shape_len, input_dim))
 
+    def train_networks(self, real_x):
+        # Run one iteraton of training for both the discriminator and generator
+        # Returns the training loss for the discriminator and generator
+        shape_len = real_x.shape[2]
+
+        # First trial for training discriminator
+        z = self.get_z(shape_len)
+        fake_x = self.generator.predict(z)
+
+        x_batch = np.concatenate((real_x, fake_x))
+        y_batch = [1] * shape_len + [0] * shape_len # real_x has target probability of 1
+        d_loss = self.discriminator.train_on_batch(x_batch, y_batch)
+
+        # Second trial for training generator
+        z = self.get_z(shape_len)
+        self.discriminator.trainable = False
+        g_loss = self.train_on_batch(z, [1] * shape_len)
+        self.discriminator.trainable = True
+
+        return d_loss, g_loss
