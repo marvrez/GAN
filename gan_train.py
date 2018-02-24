@@ -13,3 +13,7 @@ def preprocess_data(data):
     data = data[..., np.newaxis]
     data = (data.astype(np.float32) - 127.5) / 127.5
     return data
+
+# Get x from the image distribution
+def get_x(x_train, index, BATCH_SIZE):
+    return x_train[index * BATCH_SIZE:(index + 1) * BATCH_SIZE]
