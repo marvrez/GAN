@@ -48,7 +48,6 @@ class GAN(models.Sequential):
     def generator(self):
         """
         Create the generator network
-        :param z_dim: Dimensions of input noise vector, z
         """
         #Input tensor will be batches of z_dim-dimensional vectors
         input_x = Input(shape = (self.input_dim,))
@@ -71,7 +70,7 @@ class GAN(models.Sequential):
 
         return Model(input=input_x, output=x)
 
-    def discriminator():
+    def discriminator(self):
         """
         Create the discriminator network
         """
@@ -94,4 +93,9 @@ class GAN(models.Sequential):
         x = Activation('sigmoid')(x)
 
         return Model(input = input_x, output = x)
-                            
+
+    def get_z(self, shape_len):
+        # Get noise vector z from distribution p(z)
+        input_dim = self.input_dim
+        return np.random.uniform(-1, 1, size = (shape_len, input_dim))
+
