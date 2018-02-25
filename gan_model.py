@@ -42,49 +42,39 @@ class GAN(models.Sequential):
         Create the generator network
         """
         #Input tensor will be batches of z_dim-dimensional vectors
-        input_x = Input(shape = (self.input_dim,))
-        x = input_x
-        
-        x = Dense(1024)(x)
-        x = Activation('tanh')(x)
-        x = Dense(128*7*7)(x)
-        x = BatchNormalization()(x)
-        x = Activation('tanh')(x)
-        x = Reshape((7, 7, 128))(x)
+        input_dim = self.input_dim
 
-        x = UpSampling2D(size = (2, 2))(x) # 14x14
-        x = Convolution2D(64, 5, 5, border_mode = 'same')(x)
-        x = Activation('tanh')(x)
+        model = models.Sequential()
+        model.add(layers.Dense(1024, activation='tanh', input_dim=input_dim))
+        model.add(layers.Dense(128 * 7 * 7, activation='tanh'))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Reshape((128, 7, 7), input_shape=(128 * 7 * 7,)))
 
-        x = UpSampling2D(size = (2, 2))(x) # 28x28
-        x = Convolution2D(1, 5, 5, border_mode = 'same')(x)
-        x = Activation('tanh')(x)
+        model.add(layers.UpSampling2D(size=(2, 2)))
+        model.add(layers.Conv2D(64, (5, 5), padding='same', activation='tanh'))
 
-        return Model(input=input_x, output=x)
+        model.add(layers.UpSampling2D(size=(2, 2)))
+        model.add(layers.Conv2D(1, (5, 5), padding='same', activation='tanh'))
+        return model
+
 
     def discriminator(self):
         """
         Create the discriminator network
         """
+        model = models.Sequential()
         #greyscale 28x28 images as input
-        input_x = Input(shape=(28, 28, 1))
-        x = input_x
+        model.add(layers.Conv2D(64, (5, 5), padding='same', activation='tanh',
+                                input_shape=(28, 28, 1)))
+        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-        x = Conv2D(64, 5, 5, border_mode = 'same')(x)
-        x = Activation('tanh')(x)
-        x = MaxPooling2D(pool_size = (2, 2))(x)
+        model.add(layers.Conv2D(128, (5, 5), activation='tanh'))
+        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-        x = Conv2D(128, 5, 5)(x)
-        x = Activation('tanh')(x)
-        x = MaxPooling2D(pool_size = (2, 2))(x)
-
-        x = Flatten()(x)
-        x = Dense(1024)(x)
-        x = Activation('tanh')(x)
-        x = Dense(1)(x)
-        x = Activation('sigmoid')(x)
-
-        return Model(input = input_x, output = x)
+        model.add(layers.Flatten())
+        model.add(layers.Dense(1024, activation='tanh'))
+        model.add(layers.Dense(1, activation='sigmoid'))
+        return model
 
     def get_z(self, shape_len):
         # Get sample minibatch of m noise samples from noise prior p(z)
