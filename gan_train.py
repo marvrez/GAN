@@ -9,9 +9,9 @@ def get_x(x_train, index, BATCH_SIZE):
     return x_train[index * BATCH_SIZE : (index + 1) * BATCH_SIZE]
 
 def combine_images(images):
-    num = images.shape[0]
-    width, height = int(math.sqrt(num)), int(math.ceil(float(num) / width))
-    shape = images.shape[2:]
+    samples = images.shape[0]
+    width, height = int(math.sqrt(samples)), int(math.ceil(float(samples) / width))
+    shape = images.shape[1:3]
     image = np.zeros((height * shape[0], width * shape[1]),
                       dtype=images.dtype)
     for index, img in enumerate(images):
@@ -24,11 +24,12 @@ def combine_images(images):
 def create_image_grid(images):
     n = int(round(np.sqrt(len(images))))
     images = images.reshape(images.shape[:-1])
-    i_h, i_w  = images.shape[1], images.shape[2]
-    image_grid = np.zeros((n * i_h, n * i_w))
+    image_height, image_width  = images.shape[1], images.shape[2]
+    image_grid = np.zeros((n * image_height, n * image_width))
     for r in range(n):
         for c in range(n):
-            image_grid[r*i_h:(r+1)*i_h, c*i_w:(c+1)*i_w] = images[r*n+c, ...]
+            image_grid[r*image_height : (r+1)*image_height, 
+                       c*image_width  : (c+1)*image_width] = images[r*n+c, ...]
     return image_grid
 
 def save_images(generated_images, output_dir, epoch, index):

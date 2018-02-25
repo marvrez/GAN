@@ -1,7 +1,6 @@
 import keras
 import numpy as np
 from keras.datasets import mnist
-from gan_model import *
 from gan_train import *
 import argparse
 
@@ -14,6 +13,7 @@ def preprocess_data(data):
 def main():
     parser = argparse.ArgumentParser()
 
+    # Setup arguments for parser
     parser.add_argument('--batch_size', type=int, default = 16,
         help='Batch size for the networks')
     parser.add_argument('--epochs', type=int, default = 1000,
