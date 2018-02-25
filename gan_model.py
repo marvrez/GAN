@@ -4,6 +4,7 @@ from keras.layers import *
 from keras.models import Model, Sequential
 from keras import models, layers
 from keras.optimizers import SGD
+import tensorflow as tf
 
 def mse_4d_tf(y_true, y_pred):
     return tf.reduce_mean(tf.square(y_pred - y_true), axis=(1,2,3))
@@ -22,9 +23,8 @@ class GAN(models.Sequential):
         self.add(self.discriminator)
         
         # Print summary of networks
-        generator.summary()
-        discriminator.summary()
-        self.summary()
+        self.generator.summary()
+        self.discriminator.summary()
 
         self.compile_all()
 
@@ -94,7 +94,7 @@ class GAN(models.Sequential):
     def train_networks(self, real_x):
         # Run one iteraton of training for both the discriminator and generator
         # Returns the training loss for the discriminator and generator
-        shape_len = real_x.shape[2]
+        shape_len = real_x.shape[0]
 
         # First trial for training discriminator
         z = self.get_z(shape_len)

@@ -31,7 +31,7 @@ def main():
     (x_train, y_train), (_, _) = mnist.load_data()
     x_train = preprocess_data(x_train)
 
-    train(args, data)
+    train_gan(args, x_train)
 
 if __name__ == "__main__":
     main()
