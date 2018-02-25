@@ -1,8 +1,10 @@
+import math
+import os
 import numpy as np
 import matplotlib.pyplot as plot
 from tqdm import tqdm
 from gan_model import GAN
-import os
+from PIL import Image
 
 # Get x from the image distribution
 def get_x(x_train, index, BATCH_SIZE):
@@ -10,10 +12,11 @@ def get_x(x_train, index, BATCH_SIZE):
 
 def combine_images(images):
     samples = images.shape[0]
-    width, height = int(math.sqrt(samples)), int(math.ceil(float(samples) / width))
-    shape = images.shape[1:3]
-    image = np.zeros((height * shape[0], width * shape[1]),
-                      dtype=images.dtype)
+    width   = int(math.sqrt(samples))
+    height  = int(math.ceil(float(samples) / width))
+    shape   = images.shape[1:3]
+    image   = np.zeros((height * shape[0], width * shape[1]), dtype=images.dtype)
+
     for index, img in enumerate(images):
         i = int(index / width)
         j = index % width
@@ -39,11 +42,14 @@ def save_images(generated_images, output_dir, epoch, index):
         output_dir + '/' + str(epoch) + "_" + str(index) + ".png")
 
 def train_gan(args, training_images):
-    BATCH_SIZE = args.batch_size
-    epochs = args.epochs
-    output_dir = args.output_dir
-    visualize = args.visualize
-    input_dim = args.input_dim
+    BATCH_SIZE  = args.batch_size
+    epochs      = args.epochs
+    output_dir  = args.output_dir
+    visualize   = args.visualize
+    n_train     = args.n_train
+    input_dim   = args.input_dim
+
+    training_images = training_images[:n_train]
 
     if visualize:
         output_fig = plot.figure()
@@ -97,5 +103,5 @@ def train_gan(args, training_images):
     gan.generator.save_weights(output_dir + '/' + 'generator_weights', True)
     gan.discriminator.save_weights(output_dir + '/' + 'discriminator_weights', True)
 
-    np.savetxt(output_dir + '/' + 'd_loss', d_loss_ll)
-    np.savetxt(output_dir + '/' + 'g_loss', g_loss_ll)
+    np.savetxt(output_dir + '/' + 'd_loss', d_loss_epoch)
+    np.savetxt(output_dir + '/' + 'g_loss', g_loss_epoch)
