@@ -44,7 +44,7 @@ def train_gan(args, training_images):
     visualize = args.visualize
     input_dim = args.input_dim
 
-    if(visualize):
+    if visualize:
         output_fig = plot.figure()
         output_ax = output_fig.add_subplot(111)
         output_ax.axis('off')
@@ -77,9 +77,24 @@ def train_gan(args, training_images):
         d_loss_epoch.append(sum(d_losses) / len(d_losses))
         g_loss_epoch.append(sum(g_losses) / len(g_losses))
 
-    #save weights when done training
-    gan.generator.save_weights(output_fold + '/' + 'generator_weights', True)
-    gan.discriminator.save_weights(output_fold + '/' + 'discriminator_weights', True)
+        if epoch % 10 == 0 or epoch == epochs - 1:
+            z = gan.get_z(training_images.shape[0])
+            generated_images = gan.generator.predict(z)
+            save_images(generated_images, output_dir, epoch, 0)
 
-    np.savetxt(output_fold + '/' + 'd_loss', d_loss_ll)
-    np.savetxt(output_fold + '/' + 'g_loss', g_loss_ll)
+            if visualize:
+                output_ax.imshow(create_image_grid(generated_images), cmap='gray')
+                output_fig.canvas.draw()
+
+                loss_ax.clear()
+                loss_ax.plot(np.arange(len(d_loss_epoch)), d_loss_epoch, label='d_loss')
+                loss_ax.plot(np.arange(len(g_loss_epoch)), g_loss_epoch, label='g_loss')
+                loss_ax.legend()
+                loss_fig.canvas.draw()
+
+    #save weights when done training
+    gan.generator.save_weights(output_dir + '/' + 'generator_weights', True)
+    gan.discriminator.save_weights(output_dir + '/' + 'discriminator_weights', True)
+
+    np.savetxt(output_dir + '/' + 'd_loss', d_loss_ll)
+    np.savetxt(output_dir + '/' + 'g_loss', g_loss_ll)
