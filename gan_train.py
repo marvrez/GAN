@@ -45,12 +45,12 @@ def train_gan(args, training_images):
     input_dim = args.input_dim
 
     if(visualize):
-        output_fig = plt.figure()
+        output_fig = plot.figure()
         output_ax = output_fig.add_subplot(111)
         output_ax.axis('off')
         output_fig.show()
 
-        loss_fig = plt.figure()
+        loss_fig = plot.figure()
         loss_ax = loss_fig.add_subplot(111)
         loss_fig.show()
 
