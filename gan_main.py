@@ -4,12 +4,6 @@ from keras.datasets import mnist
 from gan_train import *
 import argparse
 
-# Center the data around 0, and change values to be in range [-1,1]
-def preprocess_data(data):
-    data = data[..., np.newaxis]
-    data = (data.astype(np.float32) - 127.5) / 127.5
-    return data
-
 def main():
     parser = argparse.ArgumentParser()
 
@@ -22,16 +16,15 @@ def main():
         help='Output directory to save the image results.')
     parser.add_argument('--visualize', type=str, default = 0,
         help='Set to 1 if you want to visualize the results while training.')
-    parser.add_argument('--input_dim', type=int, default = 100,
+    parser.add_argument('--input_dim', type=int, default = 10,
         help='Input dimension for the generator.')
     parser.add_argument('--n_train', type=int, default=32,
         help='The number of training data.')
 
     args = parser.parse_args()
 
-    #load MNIST dataset and preprocess data
+    #load MNIST dataset 
     (x_train, y_train), (_, _) = mnist.load_data()
-    x_train = preprocess_data(x_train)
 
     train_gan(args, x_train)
 
