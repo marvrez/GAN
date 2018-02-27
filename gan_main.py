@@ -3,6 +3,9 @@ import numpy as np
 from keras.datasets import mnist
 from gan_train import *
 import argparse
+import keras.backend as K
+
+K.set_image_data_format('channels_first')
 
 def main():
     parser = argparse.ArgumentParser()
