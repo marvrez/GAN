@@ -57,14 +57,17 @@ def train_gan(args, training_images):
     training_images = preprocess_data(training_images, n_train)
     training_images = training_images.reshape((training_images.shape[0],) + training_images.shape[1:] + (1,))
 
+    loss_fig = plot.figure()
+    loss_ax = loss_fig.add_subplot(111)
+
     if visualize:
+        # Show generated images
         output_fig = plot.figure()
         output_ax = output_fig.add_subplot(111)
         output_ax.axis('off')
         output_fig.show()
 
-        loss_fig = plot.figure()
-        loss_ax = loss_fig.add_subplot(111)
+        # Show loss graph
         loss_fig.show()
 
     os.makedirs(output_dir, exist_ok=True)
@@ -80,7 +83,7 @@ def train_gan(args, training_images):
     for epoch in tqdm(range(epochs), desc = "Training"):
         d_losses, g_losses= [], []
         for idx in tqdm(range(BATCHES_PER_EPOCH), desc = 'Epoch {}'.format(epoch), leave = False):
-            real_x = get_x(training_images, idx, BATCH_SIZE)
+            real_x = get_x(training_images, idx, BATCH_SIZE) #get the image batch
 
             d_loss, g_loss = gan.train_networks(real_x)
 
@@ -90,24 +93,28 @@ def train_gan(args, training_images):
         d_loss_epoch.append(sum(d_losses) / len(d_losses))
         g_loss_epoch.append(sum(g_losses) / len(g_losses))
 
-        if epoch % 5 == 0 or epoch == epochs - 1:
+        if epoch % 1 == 0 or epoch == epochs - 1:
             z = gan.get_z(10**2)
             generated_images = gan.generator.predict(z)
             save_images(generated_images, output_dir, epoch, 0)
+
+            loss_ax.clear()
+            loss_ax.plot(np.arange(len(d_loss_epoch)), d_loss_epoch, label='d_loss')
+            loss_ax.plot(np.arange(len(g_loss_epoch)), g_loss_epoch, label='g_loss')
+            loss_ax.legend()
+            loss_fig.canvas.draw()
+            loss_fig.savefig(output_dir + '/' + 'loss_graph.png')
 
             if visualize:
                 output_ax.imshow(create_image_grid(generated_images), cmap='gray')
                 output_fig.canvas.draw()
 
-                loss_ax.clear()
-                loss_ax.plot(np.arange(len(d_loss_epoch)), d_loss_epoch, label='d_loss')
-                loss_ax.plot(np.arange(len(g_loss_epoch)), g_loss_epoch, label='g_loss')
-                loss_ax.legend()
-                loss_fig.canvas.draw()
 
     #save weights when done training
     gan.generator.save_weights(output_dir + '/' + 'generator_weights', True)
     gan.discriminator.save_weights(output_dir + '/' + 'discriminator_weights', True)
+
+    loss_fig.savefig(output_dir + '/' + 'loss_graph.png')
 
     np.savetxt(output_dir + '/' + 'd_loss', d_loss_epoch)
     np.savetxt(output_dir + '/' + 'g_loss', g_loss_epoch)

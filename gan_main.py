@@ -16,7 +16,7 @@ def main():
         help='Output directory to save the image results.')
     parser.add_argument('--visualize', type=str, default = 0,
         help='Set to 1 if you want to visualize the results while training.')
-    parser.add_argument('--input_dim', type=int, default = 10,
+    parser.add_argument('--input_dim', type=int, default = 100,
         help='Input dimension for the generator.')
     parser.add_argument('--n_train', type=int, default=32,
         help='The number of training data.')

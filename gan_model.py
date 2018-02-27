@@ -6,9 +6,6 @@ from keras import models, layers
 from keras.optimizers import SGD
 import tensorflow as tf
 
-def mse_4d_tf(y_true, y_pred):
-    return tf.reduce_mean(tf.square(y_pred - y_true), axis=(1,2,3))
-
 class GAN(models.Sequential):
     def __init__(self, input_dim = 64):
         super().__init__()
@@ -17,14 +14,14 @@ class GAN(models.Sequential):
         #assemble both discriminator and generator
         self.generator = self.generator()
         self.discriminator = self.discriminator()
-
-        self.add(self.generator)
-        self.discriminator.trainable = False
-        self.add(self.discriminator)
         
         # Print summary of networks
         self.generator.summary()
         self.discriminator.summary()
+
+        self.add(self.generator)
+        self.discriminator.trainable = False
+        self.add(self.discriminator)
 
         self.compile_all()
 
@@ -32,7 +29,8 @@ class GAN(models.Sequential):
         # Compiling stage
         d_optimizer = SGD(lr = 0.0005, momentum = 0.9, nesterov = True)
         g_optimizer = SGD(lr = 0.0005, momentum = 0.9, nesterov = True)
-        self.generator.compile(loss = mse_4d_tf, optimizer = "SGD")
+
+        self.discriminator.trainable = False
         self.compile(loss = 'binary_crossentropy', optimizer = g_optimizer)
         self.discriminator.trainable = True
         self.discriminator.compile(loss = 'binary_crossentropy', optimizer = d_optimizer)
@@ -48,12 +46,12 @@ class GAN(models.Sequential):
         model.add(layers.Dense(1024, activation='tanh', input_dim=input_dim))
         model.add(layers.Dense(128 * 7 * 7, activation='tanh'))
         model.add(layers.BatchNormalization())
-        model.add(layers.Reshape((128, 7, 7), input_shape=(128 * 7 * 7,)))
+        model.add(layers.Reshape((7, 7, 128), input_shape=(128 * 7 * 7,)))
 
-        model.add(layers.UpSampling2D(size=(2, 2)))
+        model.add(layers.UpSampling2D(size=(2, 2))) #14x14
         model.add(layers.Conv2D(64, (5, 5), padding='same', activation='tanh'))
 
-        model.add(layers.UpSampling2D(size=(2, 2)))
+        model.add(layers.UpSampling2D(size=(2, 2))) #28x28
         model.add(layers.Conv2D(1, (5, 5), padding='same', activation='tanh'))
         return model
 
@@ -79,7 +77,7 @@ class GAN(models.Sequential):
     def get_z(self, shape_len):
         # Get sample minibatch of m noise samples from noise prior p(z)
         input_dim = self.input_dim
-        return np.random.uniform(-1, 1, size = (shape_len, input_dim))
+        return np.random.uniform(-1.0, 1.0, size = (shape_len, input_dim))
 
     def train_networks(self, real_x):
         # Run one iteraton of training for both the discriminator and generator
@@ -87,7 +85,7 @@ class GAN(models.Sequential):
         shape_len = real_x.shape[0]
 
         # First trial for training discriminator
-        z = self.get_z(shape_len)
+        z = self.get_z(shape_len) # noise vector
         fake_x = self.generator.predict(z)
 
         x_batch = np.concatenate((real_x, fake_x))
